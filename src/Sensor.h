@@ -9,7 +9,6 @@
 
 #define DEFAULT_IIC_ADDR  0x40
 #define SELECT_COMM_CMD   0X88
-#define TwoWire Wire1(&sercom1, 0, 1);
 
 
 class Sensor {

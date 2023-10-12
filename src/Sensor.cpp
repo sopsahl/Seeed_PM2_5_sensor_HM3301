@@ -4,7 +4,6 @@
 
 TwoWire Wire1(&sercom1, 0, 1);
 
-
 /**
     @brief I2C write byte
     @param reg :Register address of operation object
