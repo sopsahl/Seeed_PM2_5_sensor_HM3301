@@ -152,8 +152,8 @@ HM330XErrorCode HM330X::select_comm() {
 
 HM330XErrorCode HM330X::init() {
     Wire1.begin();
-    pinPeripheral(11, PIO_SERCOM);
-    pinPeripheral(13, PIO_SERCOM);
+    pinPeripheral(0, PIO_SERCOM);
+    pinPeripheral(1, PIO_SERCOM);
     return select_comm();
 }
 
