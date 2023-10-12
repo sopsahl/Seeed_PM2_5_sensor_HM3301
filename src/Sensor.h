@@ -32,7 +32,7 @@ class Sensor {
 
     //From the Initial Sensor code
 
-    HM330X(uint8_t IIC_ADDR = DEFAULT_IIC_ADDR);
+    Sensor(uint8_t IIC_ADDR = DEFAULT_IIC_ADDR);
 
     HM330XErrorCode init();
 
