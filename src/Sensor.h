@@ -12,7 +12,7 @@
 #define TwoWire Wire1(&sercom1, 0, 1);
 
 
-class HM330X {
+class Sensor {
   
   public:
 

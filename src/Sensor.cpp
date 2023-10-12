@@ -1,4 +1,9 @@
 #include "Sensor.h"
+#include "Wire.h"
+#include "wiring_private.h"
+
+TwoWire Wire1(&sercom1, 0, 1);
+
 
 /**
     @brief I2C write byte
@@ -6,7 +11,7 @@
     @param byte :The byte to be wrote.
     @return result of operation,non-zero if failed.
 */
-HM330XErrorCode I2COperations::IIC_write_byte(uint8_t reg, uint8_t byte) {
+HM330XErrorCode Sensor::IIC_write_byte(uint8_t reg, uint8_t byte) {
     int ret = 0;
     Wire1.beginTransmission(_IIC_ADDR);
     Wire1.write(reg);
@@ -25,7 +30,7 @@ HM330XErrorCode I2COperations::IIC_write_byte(uint8_t reg, uint8_t byte) {
     @param value: The 16bit value to be wrote .
     @return result of operation,non-zero if failed.
 */
-HM330XErrorCode I2COperations::IIC_write_16bit(uint8_t reg, uint16_t value) {
+HM330XErrorCode Sensor::IIC_write_16bit(uint8_t reg, uint16_t value) {
     int ret = 0;
     Wire1.beginTransmission(_IIC_ADDR);
     Wire1.write(reg);
@@ -46,7 +51,7 @@ HM330XErrorCode I2COperations::IIC_write_16bit(uint8_t reg, uint16_t value) {
     @param byte: The byte to be read in.
     @return result of operation,non-zero if failed.
 */
-HM330XErrorCode I2COperations::IIC_read_byte(uint8_t reg, uint8_t* byte) {
+HM330XErrorCode Sensor::IIC_read_byte(uint8_t reg, uint8_t* byte) {
     uint32_t time_out_count = 0;
     Wire1.beginTransmission(_IIC_ADDR);
     Wire1.write(reg);
@@ -70,7 +75,7 @@ HM330XErrorCode I2COperations::IIC_read_byte(uint8_t reg, uint8_t* byte) {
     @param byte: The 16bit value to be read in.
     @return result of operation,non-zero if failed.
 */
-HM330XErrorCode I2COperations::IIC_read_16bit(uint8_t start_reg, uint16_t* value) {
+HM330XErrorCode Sensor::IIC_read_16bit(uint8_t start_reg, uint16_t* value) {
     uint32_t time_out_count = 0;
     uint8_t val = 0;
     *value = 0;
@@ -100,7 +105,7 @@ HM330XErrorCode I2COperations::IIC_read_16bit(uint8_t start_reg, uint16_t* value
     @param data_len: The length of buf need to read in.
     @return result of operation,non-zero if failed.
 */
-HM330XErrorCode I2COperations::IIC_read_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len) {
+HM330XErrorCode Sensor::IIC_read_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len) {
     HM330XErrorCode ret = NO_ERROR;
     uint32_t time_out_count = 0;
     Wire1.beginTransmission(_IIC_ADDR);
@@ -122,15 +127,17 @@ HM330XErrorCode I2COperations::IIC_read_bytes(uint8_t start_reg, uint8_t* data, 
     return ret;
 }
 
+//Code from 
+
 /**
     @brief change the I2C address from default.
     @param IIC_ADDR: I2C address to be set
 */
-void I2COperations::set_iic_addr(uint8_t IIC_ADDR) {
+void Sensor::set_iic_addr(uint8_t IIC_ADDR) {
     _IIC_ADDR = IIC_ADDR;
 }
 
-HM330XErrorCode I2COperations::IIC_SEND_CMD(uint8_t CMD) {
+HM330XErrorCode Sensor::IIC_SEND_CMD(uint8_t CMD) {
     Wire1.beginTransmission(_IIC_ADDR);
     Wire1.write(CMD);
     byte ret = Wire1.endTransmission();
@@ -142,22 +149,22 @@ HM330XErrorCode I2COperations::IIC_SEND_CMD(uint8_t CMD) {
 }
 
 
-HM330X::HM330X(uint8_t IIC_ADDR) {
+Sensor::HM330X(uint8_t IIC_ADDR) {
     set_iic_addr(IIC_ADDR);
 }
 
-HM330XErrorCode HM330X::select_comm() {
+HM330XErrorCode Sensor::select_comm() {
     return IIC_SEND_CMD(SELECT_COMM_CMD);
 }
 
-HM330XErrorCode HM330X::init() {
+HM330XErrorCode Sensor::init() {
     Wire1.begin();
     pinPeripheral(0, PIO_SERCOM);
     pinPeripheral(1, PIO_SERCOM);
     return select_comm();
 }
 
-HM330XErrorCode HM330X::read_sensor_value(uint8_t* data, uint32_t data_len) {
+HM330XErrorCode Sensor::read_sensor_value(uint8_t* data, uint32_t data_len) {
     uint32_t time_out_count = 0;
     HM330XErrorCode ret = NO_ERROR;
     Wire1.requestFrom(0x40, 29);
