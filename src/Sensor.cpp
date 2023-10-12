@@ -148,7 +148,7 @@ HM330XErrorCode Sensor::IIC_SEND_CMD(uint8_t CMD) {
 }
 
 
-Sensor::HM330X(uint8_t IIC_ADDR) {
+Sensor::Sensor(uint8_t IIC_ADDR) {
     set_iic_addr(IIC_ADDR);
 }
 
