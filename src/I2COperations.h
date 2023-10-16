@@ -1,18 +1,11 @@
-#ifndef SEEED_PM2_5_SENSOR_HM3301_H
-#define SEEED_PM2_5_SENSOR_HM3301_H
+#ifndef SEEED_PM2_5_SENSOR_HM3301_I2C_OPERATIONS_H
+#define SEEED_PM2_5_SENSOR_HM3301_I2C_OPERATIONS_H
 
 #include "Arduino.h"
 #include "Wire.h"
-#include "wiring_private.h"
-
 #include "HM330XErrorCode.h"
 
-#define DEFAULT_IIC_ADDR  0x40
-#define SELECT_COMM_CMD   0X88
-
-
-class Sensor {
-  
+class I2COperations {
   public:
 
     HM330XErrorCode IIC_write_byte(uint8_t reg, uint8_t byte);
@@ -29,22 +22,9 @@ class Sensor {
 
     HM330XErrorCode IIC_SEND_CMD(uint8_t CMD);
 
-    //From the Initial Sensor code
-
-    Sensor(uint8_t IIC_ADDR = DEFAULT_IIC_ADDR);
-
-    HM330XErrorCode init();
-
-    HM330XErrorCode read_sensor_value(uint8_t* data, uint32_t data_len);
-
   private:
-
     uint8_t _IIC_ADDR;
-
-    //From the Initial Sensor Code
-
-    HM330XErrorCode select_comm();
 };
 
 
-#endif //SEEED_PM2_5_SENSOR_HM3301_H
+#endif //SEEED_PM2_5_SENSOR_HM3301_I2C_OPERATIONS_H
