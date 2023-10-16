@@ -33,7 +33,7 @@
 
 HM330X::HM330X(uint8_t IIC_ADDR) {
     set_iic_addr(IIC_ADDR);
-    twoWire myWire(&sercom2, 11, 12);
+    TwoWire myWire(&sercom2, 11, 12);
 }
 
 HM330XErrorCode HM330X::select_comm() {
