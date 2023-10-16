@@ -33,7 +33,6 @@
 
 HM330X::HM330X(uint8_t IIC_ADDR) {
     set_iic_addr(IIC_ADDR);
-    TwoWire myWire(&sercom2, 11, 12);
 }
 
 HM330XErrorCode HM330X::select_comm() {
@@ -41,15 +40,15 @@ HM330XErrorCode HM330X::select_comm() {
 }
 
 HM330XErrorCode HM330X::init() {
-    myWire.begin();
+    Wire.begin();
     return select_comm();
 }
 
 HM330XErrorCode HM330X::read_sensor_value(uint8_t* data, uint32_t data_len) {
     uint32_t time_out_count = 0;
     HM330XErrorCode ret = NO_ERROR;
-    myWire.requestFrom(0x40, 29);
-    while (data_len != myWire.available()) {
+    Wire.requestFrom(0x40, 29);
+    while (data_len != Wire.available()) {
         time_out_count++;
         if (time_out_count > 10) {
             return ERROR_COMM;
@@ -70,10 +69,10 @@ HM330XErrorCode HM330X::read_sensor_value(uint8_t* data, uint32_t data_len) {
 */
 HM330XErrorCode HM330X::IIC_write_byte(uint8_t reg, uint8_t byte) {
     int ret = 0;
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(reg);
-    myWire.write(byte);
-    ret = myWire.endTransmission();
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(reg);
+    Wire.write(byte);
+    ret = Wire.endTransmission();
     if (!ret) {
         return NO_ERROR;
     } else {
@@ -89,12 +88,12 @@ HM330XErrorCode HM330X::IIC_write_byte(uint8_t reg, uint8_t byte) {
 */
 HM330XErrorCode HM330X::IIC_write_16bit(uint8_t reg, uint16_t value) {
     int ret = 0;
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(reg);
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(reg);
 
-    myWire.write((uint8_t)(value >> 8));
-    myWire.write((uint8_t) value);
-    ret = myWire.endTransmission();
+    Wire.write((uint8_t)(value >> 8));
+    Wire.write((uint8_t) value);
+    ret = Wire.endTransmission();
     if (!ret) {
         return NO_ERROR;
     } else {
@@ -110,19 +109,19 @@ HM330XErrorCode HM330X::IIC_write_16bit(uint8_t reg, uint16_t value) {
 */
 HM330XErrorCode HM330X::IIC_read_byte(uint8_t reg, uint8_t* byte) {
     uint32_t time_out_count = 0;
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(reg);
-    myWire.endTransmission(false);
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(reg);
+    Wire.endTransmission(false);
 
-    myWire.requestFrom(_IIC_ADDR, (uint8_t) 1);
-    while (1 != myWire.available()) {
+    Wire.requestFrom(_IIC_ADDR, (uint8_t) 1);
+    while (1 != Wire.available()) {
         time_out_count++;
         if (time_out_count > 10) {
             return ERROR_COMM;
         }
         delay(1);
     }
-    *byte = myWire.read();
+    *byte = Wire.read();
     return NO_ERROR;
 }
 
@@ -136,21 +135,21 @@ HM330XErrorCode HM330X::IIC_read_16bit(uint8_t start_reg, uint16_t* value) {
     uint32_t time_out_count = 0;
     uint8_t val = 0;
     *value = 0;
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(start_reg);
-    myWire.endTransmission(false);
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(start_reg);
+    Wire.endTransmission(false);
 
-    myWire.requestFrom(_IIC_ADDR, sizeof(uint16_t));
-    while (sizeof(uint16_t) != myWire.available()) {
+    Wire.requestFrom(_IIC_ADDR, sizeof(uint16_t));
+    while (sizeof(uint16_t) != Wire.available()) {
         time_out_count++;
         if (time_out_count > 10) {
             return ERROR_COMM;
         }
         delay(1);
     }
-    val = myWire.read();
+    val = Wire.read();
     *value |= (uint16_t) val << 8;
-    val = myWire.read();
+    val = Wire.read();
     *value |= val;
     return NO_ERROR;
 }
@@ -165,12 +164,12 @@ HM330XErrorCode HM330X::IIC_read_16bit(uint8_t start_reg, uint16_t* value) {
 HM330XErrorCode HM330X::IIC_read_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len) {
     HM330XErrorCode ret = NO_ERROR;
     uint32_t time_out_count = 0;
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(start_reg);
-    myWire.endTransmission(false);
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(start_reg);
+    Wire.endTransmission(false);
 
-    myWire.requestFrom(_IIC_ADDR, data_len);
-    while (data_len != myWire.available()) {
+    Wire.requestFrom(_IIC_ADDR, data_len);
+    while (data_len != Wire.available()) {
         time_out_count++;
         if (time_out_count > 10) {
             return ERROR_COMM;
@@ -179,7 +178,7 @@ HM330XErrorCode HM330X::IIC_read_bytes(uint8_t start_reg, uint8_t* data, uint32_
     }
 
     for (int i = 0; i < data_len; i++) {
-        data[i] = myWire.read();
+        data[i] = Wire.read();
     }
     return ret;
 }
@@ -193,9 +192,9 @@ void HM330X::set_iic_addr(uint8_t IIC_ADDR) {
 }
 
 HM330XErrorCode HM330X::IIC_SEND_CMD(uint8_t CMD) {
-    myWire.beginTransmission(_IIC_ADDR);
-    myWire.write(CMD);
-    byte ret = myWire.endTransmission();
+    Wire.beginTransmission(_IIC_ADDR);
+    Wire.write(CMD);
+    byte ret = Wire.endTransmission();
     if (ret == 0) {
         return NO_ERROR;
     } else {
