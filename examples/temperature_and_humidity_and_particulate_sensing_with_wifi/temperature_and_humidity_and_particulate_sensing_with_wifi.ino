@@ -1,3 +1,8 @@
+// Code for the Seeed HM330X Particulate Sensor and SHT30 Temperature and Humidity Sensor for use in the Downstairs lab 
+// Should upload the Atmospheric and standard particulate concentrations at 1, 2.5, and 10 micron resolution
+// Should upload the Temperature (in deg C) and Humidity (%) 
+// Must update the location, or column in the database to upload files into (found in table)
+
 #include <Wire.h>
 #include <Adafruit_SHT31.h>
 #include <Seeed_HM330X.h>
@@ -15,20 +20,19 @@ uint16_t readings[6];
 char query[128];
 
 // Network Info
-char ssid[] = ""; //FILL THIS OUT                                        
-char pass[] = ""; //FILL THIS OUT
+char ssid[] = "TP-Link_9D04";                                              
+char pass[] = "qn&ngpwd"; 
 int status = WL_IDLE_STATUS;      // the Wifi radio's status
 
 // Database Adress
-// IPAddress server_addr(); //FILL THIS OUT
-// uint16_t server_port = ; //FILL THIS OUT
+IPAddress server_addr(18,25,16,44); 
+uint16_t server_port = 3307;
 // Database Account
-char user[]         = ""; //FILL THIS OUT
-char password[]     = ""; //FILL THIS OUT
+char user[]         = "lab";
+char password[]     = "qn&ngpwdDB1";
 //Database Name
-char database[] = ""; //FILL THIS OUT
-char table_particulate[]    = ""; //FILL THIS OUT
-char table_temphum[] = ""; //FILL THIS OUT
+char database[] = "qnndb";
+char table[]    = "particulate_aja_room";
 
 WiFiClient client;
 MySQL_Connection conn((Client *)&client);
@@ -60,14 +64,20 @@ void setup() {
   else {
     Serial.println("Connection failed");
   }
+
   cursor = new MySQL_Cursor(&conn);
+
+  delay(10000);
+
   Serial.begin(115200);
+  delay(100);
 
   // TEMPERATURE/HUMIDITY SENSOR INITIALIZATION
   if (! sht31.begin(0x44)) {   
     Serial.println("Couldn't find SHT31");
     while (1);
   }
+
   // PARTICLE SENSOR INITIALIZATION
   if (sensor.init()) {
       Serial.println("HM330X init failed!!");
@@ -78,42 +88,51 @@ void setup() {
 
 
 void loop() {
-  if (conn.connect(server_addr, server_port, user, password, database)) {
-    delay(1000);
+  
+  //Particle Sensor code
+  
+  if (sensor.read_sensor_value(buf, 29)) {
+      Serial.println("HM330X read result failed!!");
+  }
+  generate_readings(buf, readings);
 
+  delay(100);
 
-    //Particle Sensor code
-    
-    if (sensor.read_sensor_value(buf, 29)) {
-        Serial.println("HM330X read result failed!!");
-    }
-    
-    generate_readings(buf, readings);
+  //Temperature/Humidity Sensor code
+
+  float Temperature = sht31.readTemperature();
+  float Humidity = sht31.readHumidity();
+
+  sprintf(query, "INSERT INTO %s (humidity, temperature, PM1_SPM, PM2_5_SPM, PM10_SPM, PM1_AE, PM2_5_AE, PM10_AE) VALUES (%s, %s, %u, %u, %u, %u, %u, %u)", table, String(Humidity,2).c_str(), String(Temperature,2).c_str(), readings[0], readings[1], readings[2], readings[3], readings[4], readings[5]);
+  Serial.println(query);
+  
+  
+  if (conn.connected()) {
 
     MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-    sprintf(query, "INSERT INTO %s (PM1_SPM, PM2_5_SPM, PM10_SPM, PM1_AE, PM2_5_AE, PM10_AE) VALUES (%u, %u, %u, %u, %u, %u)", table_particulate, readings[0], readings[1], readings[2], readings[3], readings[4], readings[5]);
-    Serial.println(query);
+
+    //Upload into Database
+
     cur_mem->execute(query);
-  
-
-    delay(5000);
-
-
-    //Temperature/Humidity Sensor code
-
-    float Temperature = sht31.readTemperature();
-    float Humidity = sht31.readHumidity();
-
-
-    sprintf(query, "INSERT INTO %s (humidity, temperature) VALUES (%s, %s)", table_temphum, String(Humidity,2).c_str(), String(Temperature,2).c_str());    
-    Serial.println(query);
-    cur_mem->execute(query);
+    Serial.println("query added to database");
     delete cur_mem;
-
   }
 
-  conn.close();
-  delay(30000);
+  else {
+    conn.close();
+
+    delay(60000);
+
+    MySQL_Connection conn((Client *)&client);
+
+    if (conn.connect(server_addr, server_port, user, password, database)) {
+    Serial.println("Connected to MySQL server");
+    }
+    
+  }
+
+
+  delay(60000);
 
 }
 
