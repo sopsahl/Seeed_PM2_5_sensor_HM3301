@@ -78,11 +78,14 @@ void setup() {
     while (1);
   }
 
+  
   // PARTICLE SENSOR INITIALIZATION
   if (sensor.init()) {
       Serial.println("HM330X init failed!!");
       while (1);
   }
+
+  Serial.println("Setup Complete");
 
 }
 
@@ -105,6 +108,15 @@ void loop() {
 
   sprintf(query, "INSERT INTO %s (humidity, temperature, PM1_SPM, PM2_5_SPM, PM10_SPM, PM1_AE, PM2_5_AE, PM10_AE) VALUES (%s, %s, %u, %u, %u, %u, %u, %u)", table, String(Humidity,2).c_str(), String(Temperature,2).c_str(), readings[0], readings[1], readings[2], readings[3], readings[4], readings[5]);
   Serial.println(query);
+
+  while (status != WL_CONNECTED) {
+    Serial.print("Disconnected-----Attempting to connect to network: ");
+    Serial.println(ssid);
+    // // Connect to WPA/WPA2 network:
+    status = WiFi.begin(ssid, pass);
+    // // wait 10 seconds for connection:
+    delay(10000);
+  }
   
   
   if (conn.connected()) {
